@@ -77,7 +77,7 @@ auto main() -> int {
 }
 ```
 
-### Polymorphism
+### Basic Polymorphism
 
 ```cpp
 import std;
@@ -101,5 +101,52 @@ auto main() -> int {
     auto test4 = TestStruct4{30, 40};
     const auto serialized4 = serex::save(test4);
     const auto new_test4 = serex::load<TestStruct4>(serialized4);
+}
+```
+
+### Advanced Polymorphism with Base Class Pointer
+
+```cpp
+import std;
+import serex.serialize;
+
+struct Base : serex::SerializablePolymorphicBase {
+    int a;
+
+    auto serex_type() -> std::string override {
+        return "Base";
+    }
+
+    Base() = default;
+    explicit Base(const int a) : a{a} {}
+};
+
+
+struct Derived final : Base {
+    int b;
+
+    auto serex_type() -> std::string override {
+        return "Derived";
+    }
+
+    Derived() = default;
+    explicit Derived(const int a, const int b) : Base{a}, b{b} {}
+};
+
+
+auto test() {
+    // Call once in a startup function (before any serialization)
+    serex::register_polymorphic_type<Base>("Base");
+    serex::register_polymorphic_type<Derived>("Derived");
+
+    auto d = Derived{0, 1};
+    auto serialized = serex::save(d);
+    // send over socket for example, received unknown type as string
+    // --->
+    
+    // <---
+    // load as known common base type and cast to derived type
+    auto dd = serex::load<Base*>(serialized);
+    auto ee = serex::poly_non_owning_cast<Derived>(dd);
 }
 ```

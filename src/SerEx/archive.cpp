@@ -21,13 +21,18 @@ namespace serex {
         { obj.load(ar) } -> std::same_as<void>;
     };
 
-    export template <typename T>
+    export template <typename T> requires (not std::is_pointer_v<T>)
     auto save(T &obj) -> std::string {
         return Serializer<T>::save(obj);
     }
 
-    export template <typename T>
+    export template <typename T> requires (not std::is_pointer_v<T>)
     auto load(const std::string &s) -> T {
+        return Serializer<T>::load(s);
+    }
+
+    export template <typename T> requires std::is_pointer_v<T>
+    auto load(const std::string& s) -> std::unique_ptr<std::remove_pointer_t<T>> {
         return Serializer<T>::load(s);
     }
 }
