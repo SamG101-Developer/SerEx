@@ -10,23 +10,29 @@ struct serex::Serializer<T> {
     }
 
     static auto load(const std::string &s) -> T {
-        if constexpr (std::same_as<T, int>) {
-            return std::stoi(s);
+        if constexpr (std::same_as<T, std::uint8_t>) {
+            return static_cast<T>(std::stoi(s));
         }
-        else if constexpr (std::same_as<T, long>) {
-            return std::stol(s);
+        else if constexpr (std::same_as<T, std::int8_t>) {
+            return static_cast<T>(std::stoul(s));
         }
-        else if constexpr (std::same_as<T, long long>) {
-            return std::stoll(s);
+        else if constexpr (std::same_as<T, std::int16_t>) {
+            return static_cast<T>(std::stoi(s));
         }
-        else if constexpr (std::same_as<T, unsigned int>) {
-            return static_cast<unsigned int>(std::stoul(s));
+        else if constexpr (std::same_as<T, std::uint16_t>) {
+            return static_cast<T>(std::stoul(s));
         }
-        else if constexpr (std::same_as<T, unsigned long>) {
-            return std::stoul(s);
+        else if constexpr (std::same_as<T, std::int32_t>) {
+            return static_cast<T>(std::stoi(s));
         }
-        else if constexpr (std::same_as<T, unsigned long long>) {
-            return std::stoull(s);
+        else if constexpr (std::same_as<T, std::uint32_t>) {
+            return static_cast<T>(std::stoul(s));
+        }
+        else if constexpr (std::same_as<T, std::int64_t>) {
+            return static_cast<T>(std::stoll(s));
+        }
+        else if constexpr (std::same_as<T, std::uint64_t>) {
+            return static_cast<T>(std::stoull(s));
         }
         else if constexpr (std::same_as<T, float>) {
             return std::stof(s);
