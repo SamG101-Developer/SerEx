@@ -1,4 +1,5 @@
 export module serex.polymorphic;
+import serex.string;
 import std;
 
 
