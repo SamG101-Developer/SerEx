@@ -3,9 +3,9 @@ import std;
 import serex.archive;
 
 
-template <typename T>
-struct serex::Serializer<std::vector<T>> {
-    static auto save(std::vector<T> const &obj) -> std::string {
+template <typename T, typename A>
+struct serex::Serializer<std::vector<T, A>> {
+    static auto save(std::vector<T, A> const &obj) -> std::string {
         auto stream = std::string();
         for (const auto &item : obj) {
             auto partial = Serializer<T>::save(item);
@@ -16,8 +16,8 @@ struct serex::Serializer<std::vector<T>> {
         return stream;
     }
 
-    static auto load(const std::string &s) -> std::vector<T> {
-        auto vec = std::vector<T>{};
+    static auto load(const std::string &s) -> std::vector<T, A> {
+        auto vec = std::vector<T, A>{};
         for (auto i = 0uz; i < s.size(); i += sizeof(T)) {
             std::size_t item_size;
             std::memcpy(&item_size, s.data() + i, sizeof(std::size_t));
