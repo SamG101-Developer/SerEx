@@ -35,7 +35,8 @@ struct serex::SerializablePolymorphicBase {
 
     template <typename A>
     auto save(A &ar) -> void {
-        ar & serex_type();
+        auto st = serex_type();
+        ar & st;
     }
 
     template <typename A>
