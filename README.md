@@ -7,6 +7,7 @@ SerEx is a serialization library that provides extremely easy-to-use serializati
 - STL containers supported with `import serex.vector` etc
 - Exclusive to C++ modules (NO MACROS)
 - Either define `serialize` or `load+save` methods for custom types
+- Use `&` operator to chain multiple members in `serialize` method
 - Use `serex:::save` and `serex::load` for serialization and deserialization
 
 ## Examples
