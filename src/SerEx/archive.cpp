@@ -12,13 +12,8 @@ namespace serex {
     struct Serializer;
 
     template <typename T>
-    concept has_func_save = requires(T &obj, OArchive &ar) {
-        { obj.save(ar) } -> std::same_as<void>;
-    };
-
-    template <typename T>
-    concept has_func_load = requires(T &obj, IArchive &ar) {
-        { obj.load(ar) } -> std::same_as<void>;
+    concept has_func_serialize = requires(T &obj, OArchive &ar) {
+        { obj.serialize(ar) } -> std::same_as<void>;
     };
 
     export template <typename T> requires (not std::is_pointer_v<T>)
@@ -74,30 +69,30 @@ struct serex::IArchive {
 struct serex::Dispatcher {
     template <typename T>
     static auto dispatch_save(T &obj) -> std::string {
-        if constexpr (has_func_save<T>) {
+        if constexpr (has_func_serialize<T>) {
             OArchive ar;
-            obj.save(ar);
+            obj.serialize(ar);
             return ar.serialized_data;
         }
         else {
             OArchive ar;
-            obj.serialize(ar);
+            obj.save(ar);
             return ar.serialized_data;
         }
     }
 
     template <typename T>
     static auto dispatch_load(const std::string &s) -> T {
-        if constexpr (has_func_load<T>) {
+        if constexpr (has_func_serialize<T>) {
             IArchive ar{s};
             T obj;
-            obj.load(ar);
+            obj.serialize(ar);
             return obj;
         }
         else {
             IArchive ar{s};
             T obj;
-            obj.serialize(ar);
+            obj.load(ar);
             return obj;
         }
     }
