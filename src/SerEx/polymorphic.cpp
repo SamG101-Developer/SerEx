@@ -14,7 +14,7 @@ export namespace serex {
     template <typename To, typename From>
     requires std::derived_from<From, SerializablePolymorphicBase> and std::derived_from<To, From>
     auto poly_owning_cast(std::unique_ptr<From> &&from) -> std::unique_ptr<To> {
-        return dynamic_cast<To*>(from.release());
+        return std::unique_ptr(dynamic_cast<To*>(from.release()));
     }
 
     template <typename To, typename From>
