@@ -7,7 +7,7 @@ import serex.archive;
 template <typename T, typename D>
 struct serex::Serializer<std::unique_ptr<T, D>> {
     static auto save(std::unique_ptr<T, D> const &obj) -> std::string {
-        return Serializer::save(*obj);
+        return Serializer<T>::save(*obj);
     }
 
     static auto load(const std::string &s) -> std::unique_ptr<T, D> {
