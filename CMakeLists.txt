@@ -17,6 +17,9 @@ target_sources(
 target_compile_options(
         ${PROJECT_NAME} PRIVATE -fmodules-ts)
 
+target_compile_features(
+        ${PROJECT_NAME} PUBLIC cxx_std_26)
+
 
 # Install the library + export information
 install(
