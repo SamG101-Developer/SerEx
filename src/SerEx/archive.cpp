@@ -33,7 +33,7 @@ namespace serex {
 
     export template <typename T> requires std::is_pointer_v<T>
     auto load(const std::string& s) -> std::unique_ptr<std::remove_pointer_t<T>> {
-        return Serializer<T>::load(s);
+        return Serializer<std::unique_ptr<std::remove_pointer_t<T>>>::load(s);
     }
 }
 
