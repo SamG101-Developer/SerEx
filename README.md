@@ -3,8 +3,8 @@
 SerEx is a serialization library that provides extremely easy-to-use serialization and deserialization functionalities.
 
 - Single string output format
-- Polymorphism supported with `import serex.polymorphism`
-- STL containers supported with `import serex.vector` etc
+- Polymorphism supported
+- STL containers supported
 - Exclusive to C++ modules (NO MACROS)
 - Either define `serialize` or `load+save` methods for custom types
 - Use `&` operator to chain multiple members in `serialize` method
@@ -17,7 +17,6 @@ SerEx is a serialization library that provides extremely easy-to-use serializati
 ```cpp
 import std;
 import serex.serialize;
-import serex.vector;
 
 struct TestStruct {
     int a;
@@ -49,8 +48,6 @@ auto main() -> int {
 ```cpp
 import std;
 import serex.serialize;
-import serex.vector;
-import serex.tuple;
 
 auto main() -> int {
     auto test2 = std::tuple(std::string("hello world"), 123, 4.56f, std::vector{7, 8, 9}, true, std::tuple{5, false});
@@ -85,7 +82,6 @@ auto main() -> int {
 ```cpp
 import std;
 import serex.serialize;
-import serex.polymorphism;
 
 struct TestStruct4 : TestStruct2 {
     int b;
