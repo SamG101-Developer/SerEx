@@ -1,4 +1,5 @@
 export module serex.archive;
+import serex.encoding;
 import std;
 
 
@@ -49,8 +50,9 @@ struct serex::OArchive final : Archive {
     OArchive() = default;
 
     auto operator&(auto &obj) -> OArchive& {
+        // Use hex between the newlines, so there are no clashes with existing newlines in data.
         auto partial = Serializer<std::decay_t<decltype(obj)>>::save(obj);
-        serialized_data.append(partial).append("\n");
+        serialized_data.append(to_hex(partial)).append("\n");
         return *this;
     }
 };
@@ -68,7 +70,7 @@ struct serex::IArchive final : Archive {
         while (serialized_data[next_pos + 1] == '\n') {
             ++next_pos;
         }
-        const auto token = serialized_data.substr(pos, next_pos - pos);
+        const auto token = from_hex(serialized_data.substr(pos, next_pos - pos));
         obj = Serializer<std::decay_t<decltype(obj)>>::load(token);
         pos = next_pos + 1;
         return *this;
