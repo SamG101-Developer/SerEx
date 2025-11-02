@@ -29,7 +29,9 @@ struct serex::SerializablePolymorphicBase {
     virtual ~SerializablePolymorphicBase() = default;
     SerializablePolymorphicBase() = default;
 
-    virtual auto serex_type() -> std::string = 0;
+    virtual auto serex_type() -> std::string {
+        return "";
+    }
 
     inline static std::unordered_map<std::string, std::function<std::unique_ptr<SerializablePolymorphicBase>()>> registry;
 
@@ -41,7 +43,8 @@ struct serex::SerializablePolymorphicBase {
 
     template <typename A>
     auto load(A &ar) -> void {
-        return ar & registry[serex_type()]();
+        if (serex_type().empty()) { return; }
+        ar & registry[serex_type()]();
     }
 };
 
