@@ -1,25 +1,26 @@
 export module serex.polymorphic;
+import serex.archive;
 import serex.string;
-import serex.pointers;
 import std;
 
 
 export namespace serex {
-    template <typename Base, typename Derived> requires std::derived_from<Derived, Base>
+    struct SerializablePolymorphicBase;
+
+    template <typename Base, typename Derived>
+    requires std::derived_from<Derived, Base>
     auto base_object(Derived *d) -> Base& {
         return *d;
     }
 
-    struct SerializablePolymorphicBase;
-
     template <typename To, typename From>
-        requires std::derived_from<From, SerializablePolymorphicBase> and std::derived_from<To, From>
+    requires std::derived_from<From, SerializablePolymorphicBase> and std::derived_from<To, From>
     auto poly_owning_cast(std::unique_ptr<From> &&from) -> std::unique_ptr<To> {
         return std::unique_ptr<To>(dynamic_cast<To*>(from.release()));
     }
 
     template <typename To, typename From>
-        requires std::derived_from<From, SerializablePolymorphicBase> and std::derived_from<To, From>
+    requires std::derived_from<From, SerializablePolymorphicBase> and std::derived_from<To, From>
     auto poly_non_owning_cast(const std::unique_ptr<From> &from) -> To* {
         return dynamic_cast<To*>(from.get());
     }
@@ -34,19 +35,30 @@ struct serex::SerializablePolymorphicBase {
         return "";
     }
 
-    inline static std::unordered_map<std::string, std::function<std::unique_ptr<SerializablePolymorphicBase>()>> registry;
-
     template <typename A>
-    auto save(A &ar) -> void {
-        auto st = serex_type();
-        ar & st;
+    auto serialize(A &ar) -> void {}
+
+    inline static std::unordered_map<std::string, std::function<std::unique_ptr<SerializablePolymorphicBase>()>> registry;
+};
+
+
+
+template <typename T>
+struct serex::Serializer<std::unique_ptr<T>> {
+    static auto save(std::unique_ptr<T> const &obj) -> std::string {
+        return Serializer<T>::save(*obj);
     }
 
-    template <typename A>
-    auto load(A &ar) -> void {
-        if (serex_type().empty()) { return; }
-        auto t = registry[serex_type()]();
-        ar & t;
+    static auto load(const std::string &s) -> std::unique_ptr<T> {
+        // Get the "std::unique_ptr" of the correct derived type.
+        const auto end_type = s.find('\n');
+        const auto type = s.substr(0, end_type);
+        auto ptr = SerializablePolymorphicBase::registry[type]();
+
+        // Load the object data into the derived type object.
+        auto archive = IArchive(s.substr(end_type + 1));
+        ptr->serialize(archive);
+        return std::unique_ptr<T>(dynamic_cast<T*>(ptr.release()));
     }
 };
 
