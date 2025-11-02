@@ -13,13 +13,13 @@ export namespace serex {
     struct SerializablePolymorphicBase;
 
     template <typename To, typename From>
-    requires std::derived_from<From, SerializablePolymorphicBase> and std::derived_from<To, From>
+        requires std::derived_from<From, SerializablePolymorphicBase> and std::derived_from<To, From>
     auto poly_owning_cast(std::unique_ptr<From> &&from) -> std::unique_ptr<To> {
         return std::unique_ptr<To>(dynamic_cast<To*>(from.release()));
     }
 
     template <typename To, typename From>
-    requires std::derived_from<From, SerializablePolymorphicBase> and std::derived_from<To, From>
+        requires std::derived_from<From, SerializablePolymorphicBase> and std::derived_from<To, From>
     auto poly_non_owning_cast(const std::unique_ptr<From> &from) -> To* {
         return dynamic_cast<To*>(from.get());
     }
@@ -45,7 +45,8 @@ struct serex::SerializablePolymorphicBase {
     template <typename A>
     auto load(A &ar) -> void {
         if (serex_type().empty()) { return; }
-        ar & registry[serex_type()]();
+        auto t = registry[serex_type()]();
+        ar & t;
     }
 };
 
