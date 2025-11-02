@@ -7,12 +7,6 @@ import std;
 export namespace serex {
     struct SerializablePolymorphicBase;
 
-    template <typename Base, typename Derived>
-    requires std::derived_from<Derived, Base>
-    auto base_object(Derived *d) -> Base& {
-        return *d;
-    }
-
     template <typename To, typename From>
     requires std::derived_from<From, SerializablePolymorphicBase> and std::derived_from<To, From>
     auto poly_owning_cast(std::unique_ptr<From> &&from) -> std::unique_ptr<To> {

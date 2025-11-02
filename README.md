@@ -86,10 +86,9 @@ struct TestStruct4 : TestStruct2 {
     TestStruct4() = default;
     TestStruct4(const int a_, const int b_) : TestStruct2{a_}, b(b_) {}
 
-    template <typename A>
-    auto serialize(A &ar) -> void {
-        ar & serex::base_object<TestStruct2>(this);
-        ar & b;
+    auto serialize(serex::Archive &ar) -> void {
+        TestStruct2::serialize(ar);
+        serex::push_into_archive(ar, b);
     }
 };
 
