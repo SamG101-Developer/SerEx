@@ -33,7 +33,7 @@ namespace serex {
     }
 
     export template <typename... Args>
-    auto push_into_archive(Archive &ar, Args &&... args) -> Archive&;
+    auto push_into_archive(Archive &ar, Args &&... args) -> void;
 }
 
 
@@ -49,7 +49,7 @@ struct serex::OArchive final : Archive {
     OArchive() = default;
 
     auto operator&(auto &obj) -> OArchive& {
-        auto partial = Serializer<std::decay_t<decltype(obj)>>().save(obj);
+        auto partial = Serializer<std::decay_t<decltype(obj)>>::save(obj);
         serialized_data.append(partial).append("\n");
         return *this;
     }
@@ -69,7 +69,7 @@ struct serex::IArchive final : Archive {
             ++next_pos;
         }
         const auto token = serialized_data.substr(pos, next_pos - pos);
-        obj = Serializer<std::decay_t<decltype(obj)>>().load(token);
+        obj = Serializer<std::decay_t<decltype(obj)>>::load(token);
         pos = next_pos + 1;
         return *this;
     }
@@ -122,14 +122,12 @@ struct serex::Serializer {
 
 
 template <typename... Args>
-auto serex::push_into_archive(Archive &ar, Args &&... args) -> Archive& {
+auto serex::push_into_archive(Archive &ar, Args &&... args) -> void {
     if (auto o_archive = dynamic_cast<OArchive*>(&ar)) {
         (o_archive->operator&(args), ...);
-        return *o_archive;
     }
     if (auto i_archive = dynamic_cast<IArchive*>(&ar)) {
         (i_archive->operator&(args), ...);
-        return *i_archive;
     }
     std::unreachable();
 }

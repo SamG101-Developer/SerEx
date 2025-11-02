@@ -7,7 +7,6 @@ SerEx is a serialization library that provides extremely easy-to-use serializati
 - STL containers supported
 - Exclusive to C++ modules (NO MACROS)
 - Either define `serialize` or `load+save` methods for custom types
-- Use `&` operator to chain multiple members in `serialize` method
 - Use `serex:::save` and `serex::load` for serialization and deserialization
 
 ## Examples
@@ -29,9 +28,8 @@ struct TestStruct {
     TestStruct(const int a_, const float b_, std::string const &c_, std::vector<float> const &d_ = {})
         : a(a_), b(b_), c(c_), d(d_) {}
 
-    template <typename A>
-    auto serialize(A &ar) -> void {
-        ar & a & b & c & d;
+    auto serialize(serex::Archive &ar) -> void {
+        serex::push_into_archive(ar, a, b, c, d);
     }
 };
 
@@ -63,9 +61,8 @@ struct TestStruct3 {
     TestStruct2 t1;
     TestStruct2 t2;
 
-    template <typename A>
-    auto serialize(A &ar) -> void {
-        ar & t1 & t2;
+    auto serialize(serex::Archive &ar) -> void {
+        serex::push_into_archive(ar, t1, t2);
     }
 };
 
