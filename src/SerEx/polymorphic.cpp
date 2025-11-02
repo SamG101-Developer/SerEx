@@ -44,7 +44,7 @@ struct serex::SerializablePolymorphicBase {
     template <typename A>
     auto load(A &ar) -> void {
         if (serex_type().empty()) { return; }
-        ar & registry[serex_type()]();
+        ar & *registry[serex_type()]();
     }
 };
 
