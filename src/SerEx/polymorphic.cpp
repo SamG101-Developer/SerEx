@@ -46,7 +46,7 @@ struct serex::SerializablePolymorphicBase {
 template <typename T>
 struct serex::Serializer<std::unique_ptr<T>> {
     static auto save(std::unique_ptr<T> const &obj) -> std::string {
-        return Serializer<T>::save(*obj);
+        return obj->serex_type() + "\n" + Serializer<T>::save(*obj);
     }
 
     static auto load(const std::string &s) -> std::unique_ptr<T> {
