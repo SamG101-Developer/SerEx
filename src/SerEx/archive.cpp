@@ -33,7 +33,7 @@ namespace serex {
     }
 
     export template <typename... Args>
-    auto push_into_archive(Archive &ar, Args &&... args) -> void;
+    auto push_into_archive(Archive &ar, Args &... args) -> void;
 }
 
 
@@ -122,12 +122,14 @@ struct serex::Serializer {
 
 
 template <typename... Args>
-auto serex::push_into_archive(Archive &ar, Args &&... args) -> void {
+auto serex::push_into_archive(Archive &ar, Args &... args) -> void {
     if (auto o_archive = dynamic_cast<OArchive*>(&ar)) {
         (o_archive->operator&(args), ...);
+        return;
     }
     if (auto i_archive = dynamic_cast<IArchive*>(&ar)) {
         (i_archive->operator&(args), ...);
+        return;
     }
     std::unreachable();
 }
