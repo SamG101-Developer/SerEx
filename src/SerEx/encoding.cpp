@@ -11,7 +11,7 @@ namespace serex {
     }
 
     export inline auto to_hex(
-        const std::span<std::uint8_t> data) ->
+        std::string const &data) ->
         std::string {
         // Prepare the hexadecimal characters.
         static constexpr char hex_chars[] = "0123456789abcdef";
