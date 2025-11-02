@@ -11,7 +11,7 @@ struct serex::Serializer<std::vector<T, A>> {
         auto vec_size = obj.size();
         stream.append(reinterpret_cast<const char*>(&vec_size), sizeof(vec_size));
         for (const auto &item : obj) {
-            auto partial = Serializer<T>::save(item) + "\n";
+            auto partial = Serializer<T>::save(item);
             stream.append(partial);
         }
         return stream;
@@ -19,15 +19,15 @@ struct serex::Serializer<std::vector<T, A>> {
 
     static auto load(const std::string &s) -> std::vector<T, A> {
         auto vec = std::vector<T, A>{};
-        std::size_t vec_size;
+        auto elem_size = sizeof(T);
+        auto offset = sizeof(std::size_t);
+        auto vec_size = 0uz;
         std::memcpy(&vec_size, s.data(), sizeof(vec_size));
-        auto offset = sizeof(vec_size);
         for (auto i = 0uz; i < vec_size; ++i) {
-            const auto end_pos = s.find('\n', offset);
-            const auto item_data = s.substr(offset, end_pos - offset);
+            auto item_data = s.substr(offset, elem_size);
             auto item = Serializer<T>::load(item_data);
             vec.push_back(std::move(item));
-            offset = end_pos + 1;
+            offset += elem_size;
         }
         return vec;
     }
