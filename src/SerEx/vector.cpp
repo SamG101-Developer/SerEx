@@ -8,19 +8,27 @@ requires std::is_trivially_copyable_v<T>
 struct serex::Serializer<std::vector<T, A>> {
     static auto save(std::vector<T, A> const &obj) -> std::string {
         auto stream = std::string();
-        const auto element_size = sizeof(T);
-        stream.append(reinterpret_cast<const char*>(&element_size), sizeof(std::size_t));
-        stream.append(reinterpret_cast<const char*>(obj.data()), obj.size() * sizeof(T));
+        auto vec_size = obj.size();
+        stream.append(reinterpret_cast<const char*>(&vec_size), sizeof(vec_size));
+        for (const auto &item : obj) {
+            auto partial = Serializer<T>::save(item) + "\n";
+            stream.append(partial);
+        }
         return stream;
     }
 
     static auto load(const std::string &s) -> std::vector<T, A> {
-        auto element_size = 0uz;
-        std::memcpy(&element_size, s.data(), sizeof(element_size));
-        const auto vec_size = (s.size() - sizeof(element_size)) / element_size;
-
         auto vec = std::vector<T, A>{};
-        std::memcpy(vec.data(), s.data() + sizeof(element_size), vec_size * element_size);
+        std::size_t vec_size;
+        std::memcpy(&vec_size, s.data(), sizeof(vec_size));
+        auto offset = sizeof(vec_size);
+        for (auto i = 0uz; i < vec_size; ++i) {
+            const auto end_pos = s.find('\n', offset);
+            const auto item_data = s.substr(offset, end_pos - offset);
+            auto item = Serializer<T>::load(item_data);
+            vec.push_back(std::move(item));
+            offset = end_pos + 1;
+        }
         return vec;
     }
 };
