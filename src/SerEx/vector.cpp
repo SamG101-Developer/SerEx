@@ -4,28 +4,23 @@ import serex.archive;
 
 
 template <typename T, typename A>
-    requires std::is_trivially_copyable_v<T>
+requires std::is_trivially_copyable_v<T>
 struct serex::Serializer<std::vector<T, A>> {
     static auto save(std::vector<T, A> const &obj) -> std::string {
         auto stream = std::string();
         const auto element_size = sizeof(T);
         stream.append(reinterpret_cast<const char*>(&element_size), sizeof(std::size_t));
-        for (const auto &item : obj) {
-            auto partial = Serializer<T>::save(item);
-            stream.append(partial);
-        }
+        stream.append(reinterpret_cast<const char*>(obj.data()), obj.size() * sizeof(T));
         return stream;
     }
 
     static auto load(const std::string &s) -> std::vector<T, A> {
+        auto element_size = 0uz;
+        std::memcpy(&element_size, s.data(), sizeof(element_size));
+        const auto vec_size = (s.size() - sizeof(element_size)) / element_size;
+
         auto vec = std::vector<T, A>{};
-        std::size_t element_size;
-        std::memcpy(&element_size, s.data(), sizeof(std::size_t));
-        for (auto i = sizeof(std::size_t); i < s.size(); i += element_size) {
-            auto item_data = s.substr(i, element_size);
-            auto item = Serializer<T>::load(item_data);
-            vec.push_back(std::move(item));
-        }
+        std::memcpy(vec.data(), s.data() + sizeof(element_size), vec_size * element_size);
         return vec;
     }
 };
