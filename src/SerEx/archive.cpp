@@ -3,6 +3,7 @@ import std;
 
 
 namespace serex {
+    export struct Archive;
     export struct IArchive;
     export struct OArchive;
 
@@ -27,13 +28,22 @@ namespace serex {
     }
 
     export template <typename T> requires std::is_pointer_v<T>
-    auto load(const std::string& s) -> std::unique_ptr<std::remove_pointer_t<T>> {
+    auto load(const std::string &s) -> std::unique_ptr<std::remove_pointer_t<T>> {
         return Serializer<std::unique_ptr<std::remove_pointer_t<T>>>::load(s);
     }
+
+    template <typename... Args>
+    auto push_into_archive(Archive &ar, Args &&... args) -> Archive&;
 }
 
 
-struct serex::OArchive {
+struct serex::Archive {
+    virtual ~Archive() = default;
+    Archive() = default;
+};
+
+
+struct serex::OArchive final : Archive {
     std::string serialized_data;
 
     OArchive() = default;
@@ -46,7 +56,7 @@ struct serex::OArchive {
 };
 
 
-struct serex::IArchive {
+struct serex::IArchive final : Archive {
     std::string serialized_data;
     std::size_t pos = 0;
 
@@ -109,3 +119,17 @@ struct serex::Serializer {
         return Dispatcher::dispatch_load<T>(s);
     }
 };
+
+
+template <typename... Args>
+auto serex::push_into_archive(Archive &ar, Args &&... args) -> Archive& {
+    if (auto o_archive = dynamic_cast<OArchive*>(&ar)) {
+        (o_archive->operator&(args), ...);
+        return *o_archive;
+    }
+    if (auto i_archive = dynamic_cast<IArchive*>(&ar)) {
+        (i_archive->operator&(args), ...);
+        return *i_archive;
+    }
+    std::unreachable();
+}

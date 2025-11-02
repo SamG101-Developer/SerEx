@@ -35,8 +35,7 @@ struct serex::SerializablePolymorphicBase {
         return "";
     }
 
-    template <typename A>
-    auto serialize(A &ar) -> void {}
+    virtual auto serialize(Archive &ar) -> void {}
 
     inline static std::unordered_map<std::string, std::function<std::unique_ptr<SerializablePolymorphicBase>()>> registry;
 };
