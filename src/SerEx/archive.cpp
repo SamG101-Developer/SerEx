@@ -32,7 +32,7 @@ namespace serex {
         return Serializer<std::unique_ptr<std::remove_pointer_t<T>>>::load(s);
     }
 
-    template <typename... Args>
+    export template <typename... Args>
     auto push_into_archive(Archive &ar, Args &&... args) -> Archive&;
 }
 
