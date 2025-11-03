@@ -50,9 +50,10 @@ struct serex::OArchive final : Archive {
     OArchive() = default;
 
     auto operator&(auto &obj) -> OArchive& {
-        // Use hex between the newlines, so there are no clashes with existing newlines in data.
         auto partial = Serializer<std::decay_t<decltype(obj)>>::save(obj);
-        serialized_data.append(to_hex(partial)).append("\n");
+        auto partial_size = partial.size();
+        serialized_data.append(reinterpret_cast<const char*>(&partial_size), sizeof(std::size_t));
+        serialized_data.append(partial);
         return *this;
     }
 };
@@ -66,13 +67,13 @@ struct serex::IArchive final : Archive {
         serialized_data(data) {}
 
     auto operator&(auto &obj) -> IArchive& {
-        auto next_pos = serialized_data.find('\n', pos);
-        while (serialized_data[next_pos + 1] == '\n') {
-            ++next_pos;
-        }
-        const auto token = from_hex(serialized_data.substr(pos, next_pos - pos));
-        obj = Serializer<std::decay_t<decltype(obj)>>::load(token);
-        pos = next_pos + 1;
+        auto partial_size = 0uz;
+        std::memcpy(&partial_size, serialized_data.data() + pos, sizeof(std::size_t));
+        pos += sizeof(std::size_t);
+
+        auto partial = serialized_data.substr(pos, partial_size);
+        obj = Serializer<std::decay_t<decltype(obj)>>::load(partial);
+        pos += partial_size;
         return *this;
     }
 };
