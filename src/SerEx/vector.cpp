@@ -4,7 +4,7 @@ import serex.archive;
 
 
 template <typename T, typename A>
-requires std::is_trivially_copyable_v<T>
+    requires std::is_trivially_copyable_v<T>
 struct serex::Serializer<std::vector<T, A>> {
     static auto save(std::vector<T, A> const &obj) -> std::string {
         auto stream = std::string();
@@ -49,14 +49,15 @@ struct serex::Serializer<std::vector<T, A>> {
 
     static auto load(const std::string &s) -> std::vector<T, A> {
         auto vec = std::vector<T, A>{};
-        for (auto i = 0uz; i < s.size(); i += sizeof(T)) {
-            std::size_t item_size;
+        auto i = 0uz;
+        while (i < s.size()) {
+            auto item_size = 0uz;
             std::memcpy(&item_size, s.data() + i, sizeof(std::size_t));
             i += sizeof(std::size_t);
+
             auto item_data = s.substr(i, item_size);
-            auto item = Serializer<T>::load(item_data);
-            vec.push_back(std::move(item));
             i += item_size;
+            vec.push_back(Serializer<T>::load(item_data));
         }
         return vec;
     }

@@ -24,7 +24,7 @@ struct serex::Serializer<std::tuple<Ts...>> {
     }
 
     template <std::size_t N> requires (N < sizeof...(Ts))
-    static auto load_helper(const std::string& s) -> auto {
+    static auto load_helper(const std::string& s) {
         using current_t = std::tuple_element_t<N, std::tuple<Ts...>>;
         std::size_t item_size;
         std::memcpy(&item_size, s.data(), sizeof(std::size_t));
