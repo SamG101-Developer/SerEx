@@ -143,6 +143,7 @@ auto test() {
     // <---
     // load as known common base type and cast to derived type
     auto dd = serex::load<Base*>(serialized);
-    auto ee = serex::poly_non_owning_cast<Derived>(dd);
+    auto ee = serex::poly_non_owning_cast<Derived>(dd);  // Derived*
+    auto ff = serex::poly_owning_cast<Derived>(dd);      // std::unique_ptr<Derived> (moved from dd)
 }
 ```
