@@ -141,6 +141,7 @@ struct Derived final : Base {
 
 auto test() {
     // Call once in a startup function (before any serialization)
+    // These type names must match those returned by serex_type()
     serex::register_polymorphic_type<Base>("Base");
     serex::register_polymorphic_type<Derived>("Derived");
 
