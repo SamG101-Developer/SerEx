@@ -112,6 +112,10 @@ struct Base : serex::SerializablePolymorphicBase {
     auto serex_type() -> std::string override {
         return "Base";
     }
+    
+    auto serialize(serex::Archive &ar) override -> void {
+        serex::push_into_archive(ar, a);
+    }
 
     Base() = default;
     explicit Base(const int a) : a{a} {}
@@ -123,6 +127,11 @@ struct Derived final : Base {
 
     auto serex_type() -> std::string override {
         return "Derived";
+    }
+    
+    auto serialize(serex::Archive &ar) override -> void {
+        Base::serialize(ar);
+        serex::push_into_archive(ar, b);
     }
 
     Derived() = default;
