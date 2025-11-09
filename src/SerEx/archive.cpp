@@ -35,7 +35,7 @@ namespace serex {
 
     export template <typename T>
     auto load(std::string &&s) -> auto {
-        return Serializer<T>::load(s);
+        return serex::load<T>(s);
     }
 
     export template <typename... Args>
