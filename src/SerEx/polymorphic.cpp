@@ -25,11 +25,9 @@ struct serex::SerializablePolymorphicBase {
     virtual ~SerializablePolymorphicBase() = default;
     SerializablePolymorphicBase() = default;
 
-    virtual auto serex_type() -> std::string {
-        return "";
-    }
+    virtual auto serex_type() -> std::string = 0;
 
-    virtual auto serialize(Archive &ar) -> void {}
+    virtual auto serialize(Archive &ar) -> void = 0;
 
     inline static std::unordered_map<std::string, std::function<std::unique_ptr<SerializablePolymorphicBase>()>> registry;
 };

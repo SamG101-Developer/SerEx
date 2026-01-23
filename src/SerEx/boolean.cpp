@@ -7,10 +7,10 @@ import serex.archive;
 template <>
 struct serex::Serializer<bool> {
     static auto save(const bool &obj) -> std::string {
-        return obj ? "t" : "f";
+        return obj ? "1" : "0";
     }
 
     static auto load(const std::string &s) -> bool {
-        return s == "t";
+        return s == "1";
     }
 };

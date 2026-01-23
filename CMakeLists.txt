@@ -50,3 +50,7 @@ install(
         ${CMAKE_CURRENT_BINARY_DIR}/SerExConfig.cmake
         ${CMAKE_CURRENT_BINARY_DIR}/SerExConfigVersion.cmake
         DESTINATION lib/cmake/SerEx)
+
+# Create the tests.
+enable_testing()
+add_subdirectory(tests)

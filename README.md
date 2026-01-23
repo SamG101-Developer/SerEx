@@ -69,7 +69,7 @@ struct TestStruct3 {
 
 auto main() -> int {
     auto test3 = TestStruct3{TestStruct2{10}, TestStruct2{20}};
-    const auto serialized3 = serex::save(test3);td::endl;
+    const auto serialized3 = serex::save(test3);
     const auto new_test3 = serex::load<TestStruct3>(serialized3);
 }
 ```
@@ -146,14 +146,55 @@ auto test() {
     serex::register_polymorphic_type<Derived>("Derived");
 
     auto d = Derived{0, 1};
-    auto serialized = serex::save(d);
+    auto serialized = serex::save_poly(d);
     // send over socket for example, received unknown type as string
     // --->
     
     // <---
     // load as known common base type and cast to derived type
-    auto dd = serex::load<Base*>(serialized);
-    auto ee = serex::poly_non_owning_cast<Derived>(dd);  // Derived*
-    auto ff = serex::poly_owning_cast<Derived>(dd);      // std::unique_ptr<Derived> (moved from dd)
+    auto dd = serex::load_poly<Base*>(serialized);
+    auto ee = serex::poly_non_owning_cast<Derived>(dd);         // Derived*
+    auto ff = serex::poly_owning_cast<Derived>(std::move(dd));  // std::unique_ptr<Derived> (moved from dd)
+}
+```
+
+### Pointers
+
+```cpp
+import std;
+import serex.serialize;
+
+struct M : serex::SerializablePointer {
+    int a = 0;
+
+    auto serialize(serex::Archive &ar) -> void {
+        serex::push_into_archive(ar, a);
+    }
+};
+
+
+struct N {
+    M *a;
+    M *b;
+
+    auto serialize(serex::Archive &ar) -> void {
+        serex::push_into_archive(ar, a, b);
+    }
+};
+
+auto test() {
+    auto shared = M{};
+    shared.a = 99;
+
+    auto original = N{};
+    original.a = &shared;
+    original.b = &shared;
+
+    const auto serialized = serex::save(original);
+    const auto deserialized = serex::load<N>(serialized);
+
+    ASSERT(deserialized.a == deserialized.b);  // Pointers point to the same data
+    ASSERT(deserialized.a->a == original.a->a);
+    ASSERT(deserialized.b->a == original.b->a);
 }
 ```
