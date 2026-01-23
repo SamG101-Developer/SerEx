@@ -4,21 +4,6 @@ import serex.archive;
 import serex.polymorphic;
 
 
-namespace serex {
-    inline std::unordered_map<std::size_t, void*> pointer_map;
-
-    export struct SerializablePointer : SerializablePolymorphicBase {
-        std::size_t identifier = 0;
-        static inline std::size_t next_id = 1;
-
-        SerializablePointer() {
-            identifier = next_id++;
-            pointer_map[identifier] = this;
-        }
-    };
-}
-
-
 /**
  * Pointer serialization is more complex, because we want to be able to maintain pointer relations after serialization.
  * For example, two pointers pointing to tghe same data before, need to point to the same data afterwards. We therefore
@@ -28,7 +13,7 @@ namespace serex {
 template <typename T>
 requires std::is_pointer_v<T>
 struct serex::Serializer<T> {
-    static_assert(std::derived_from<std::remove_pointer_t<T>, serex::SerializablePointer>,
+    static_assert(std::derived_from<std::remove_pointer_t<T>, SerializablePolymorphicBase>,
         "Cannot serialize raw pointers; pointer type must derive from serex::SerializablePointer");
 
     static auto save(const T &obj) -> std::string {
@@ -51,7 +36,7 @@ struct serex::Serializer<T> {
  */
 template <typename T>
 struct serex::Serializer<std::shared_ptr<T>> {
-    static_assert(std::derived_from<T, serex::SerializablePointer>,
+    static_assert(std::derived_from<T, SerializablePolymorphicBase>,
         "Cannot serialize shared pointers; pointer type must derive from serex::SerializablePointer");
 
     static auto save(const std::shared_ptr<T> &obj) -> std::string {

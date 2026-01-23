@@ -40,7 +40,7 @@ TEST(SerializeInheritPolymorphicTest, PolymorphicSerialization) {
     original->m = 100;
     original->n = "Polymorphic Inheritance";
 
-    const auto serialized = serex::save_poly(original);
+    const auto serialized = serex::save_poly(std::move(original));
     auto deserialized = serex::load_poly<K>(serialized);
 
     // Cast to an owning pointer of type L

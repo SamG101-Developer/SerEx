@@ -3,7 +3,7 @@ import serex.serialize;
 import std;
 
 
-struct M : serex::SerializablePointer {
+struct M : serex::SerializablePolymorphicBase {
     int a = 0;
 
     auto serex_type() -> std::string override {
