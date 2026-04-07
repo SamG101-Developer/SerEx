@@ -6,6 +6,9 @@ project(SerEx VERSION 0.1.0 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 26)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_MODULE_STD ON)
+set(CMAKE_CXX_EXTENSIONS ON)
+set(CMAKE_INSTALL_RPATH "/usr/local/gcc-dev/lib64")
+set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
 
 # Collect source files.
 file(GLOB_RECURSE MODULE_SOURCES CONFIGURE_DEPENDS src/*.cpp)
@@ -13,9 +16,6 @@ add_library(${PROJECT_NAME} STATIC ${MODULE_SOURCES})
 
 target_sources(
         ${PROJECT_NAME} PUBLIC FILE_SET CXX_MODULES FILES ${MODULE_SOURCES})
-
-target_compile_options(
-        ${PROJECT_NAME} PRIVATE -fmodules-ts)
 
 target_compile_features(
         ${PROJECT_NAME} PUBLIC cxx_std_26)
