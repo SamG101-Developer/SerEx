@@ -10,8 +10,8 @@ struct C {
     std::u16string d;
     std::u32string e;
 
-    auto serialize(serex::Archive &ar) -> void {
-        serex::push_into_archive(ar, a, b, c, d, e);
+    auto Serialize(serex::Archive &ar) -> void {
+        serex::PushToArchive(ar, a, b, c, d, e);
     }
 };
 
@@ -24,8 +24,8 @@ TEST(SerexString, SerializeDeserialize) {
     original.d = u"UTF-16 String Example";
     original.e = U"UTF-32 String Example";
 
-    const auto serialized = serex::save(original);
-    const auto deserialized = serex::load<C>(serialized);
+    const auto serialized = serex::Save(original);
+    const auto deserialized = serex::Load<C>(serialized);
 
     EXPECT_EQ(original.a, deserialized.a);
     EXPECT_EQ(original.b, deserialized.b);

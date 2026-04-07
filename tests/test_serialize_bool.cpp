@@ -7,8 +7,8 @@ struct A {
     bool b = false;
     bool c = false;
 
-    auto serialize(serex::Archive &ar) -> void {
-        serex::push_into_archive(ar, a, b, c);
+    auto Serialize(serex::Archive &ar) -> void {
+        serex::PushToArchive(ar, a, b, c);
     }
 };
 
@@ -19,8 +19,8 @@ TEST(SerexBool, SerializeDeserialize) {
     original.b = false;
     original.c = true;
 
-    const auto serialized = serex::save(original);
-    const auto deserialized = serex::load<A>(serialized);
+    const auto serialized = serex::Save(original);
+    const auto deserialized = serex::Load<A>(serialized);
 
     EXPECT_EQ(original.a, deserialized.a);
     EXPECT_EQ(original.b, deserialized.b);

@@ -4,11 +4,11 @@ import std;
 
 
 struct F {
-    int x;
+    int x = 0;
     std::string y;
 
-    auto serialize(serex::Archive &ar) -> void {
-        serex::push_into_archive(ar, x, y);
+    auto Serialize(serex::Archive &ar) -> void {
+        serex::PushToArchive(ar, x, y);
     }
 };
 
@@ -16,8 +16,8 @@ struct F {
 struct G {
     F f;
 
-    auto serialize(serex::Archive &ar) -> void {
-        serex::push_into_archive(ar, f);
+    auto Serialize(serex::Archive &ar) -> void {
+        serex::PushToArchive(ar, f);
     }
 };
 
@@ -26,8 +26,8 @@ struct H {
     F f;
     G g;
 
-    auto serialize(serex::Archive &ar) -> void {
-        serex::push_into_archive(ar, f, g);
+    auto Serialize(serex::Archive &ar) -> void {
+        serex::PushToArchive(ar, f, g);
     }
 };
 
@@ -40,8 +40,8 @@ TEST(SerializeObjectsTest, NestedSerialization) {
     original.g.f.x = 84;
     original.g.f.y = "World";
 
-    const auto serialized = serex::save(original);
-    const auto deserialized = serex::load<H>(serialized);
+    const auto serialized = serex::Save(original);
+    const auto deserialized = serex::Load<H>(serialized);
 
     // Verify that the deserialized object matches the original
     EXPECT_EQ(deserialized.f.x, original.f.x);

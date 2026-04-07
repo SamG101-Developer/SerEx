@@ -15,31 +15,31 @@ namespace serex {
 
     template <typename T>
     concept has_func_serialize = requires(T &obj, OArchive &ar) {
-        { obj.serialize(ar) } -> std::same_as<void>;
+        { obj.Serialize(ar) } -> std::same_as<void>;
     };
 
     export template <typename T> requires (not std::is_pointer_v<T>)
-    auto save(T &obj) -> std::string {
-        return Serializer<std::remove_cvref_t<T>>::save(obj);
+    auto Save(T &obj) -> std::string {
+        return Serializer<std::remove_cvref_t<T>>::Save(obj);
     }
 
     export template <typename T> requires (not std::is_pointer_v<T>)
-    auto load(const std::string &s) -> T {
-        return Serializer<std::remove_cvref_t<T>>::load(s);
+    auto Load(const std::string &s) -> T {
+        return Serializer<std::remove_cvref_t<T>>::Load(s);
     }
 
     export template <typename T> requires std::is_pointer_v<T>
-    auto load(const std::string &s) -> std::unique_ptr<std::remove_pointer_t<T>> {
-        return Serializer<std::unique_ptr<std::remove_pointer_t<T>>>::load(s);
+    auto Load(const std::string &s) -> std::unique_ptr<std::remove_pointer_t<T>> {
+        return Serializer<std::unique_ptr<std::remove_pointer_t<T>>>::Load(s);
     }
 
     export template <typename T>
-    auto load(std::string &&s) -> auto {
-        return serex::load<T>(s);
+    auto Load(std::string &&s) -> auto {
+        return serex::Load<T>(s);
     }
 
     export template <typename... Args>
-    auto push_into_archive(Archive &ar, Args &... args) -> void;
+    auto PushToArchive(Archive &ar, Args &... args) -> void;
 }
 
 
@@ -55,7 +55,7 @@ struct serex::OArchive final : Archive {
     OArchive() = default;
 
     auto operator&(auto &obj) -> OArchive& {
-        auto partial = Serializer<std::decay_t<decltype(obj)>>::save(obj);
+        auto partial = Serializer<std::decay_t<decltype(obj)>>::Save(obj);
         auto partial_size = partial.size();
         serialized_data.append(reinterpret_cast<const char*>(&partial_size), sizeof(std::size_t));
         serialized_data.append(partial);
@@ -77,7 +77,7 @@ struct serex::IArchive final : Archive {
         pos += sizeof(std::size_t);
 
         auto partial = serialized_data.substr(pos, partial_size);
-        obj = Serializer<std::remove_cvref_t<decltype(obj)>>::load(partial);
+        obj = Serializer<std::remove_cvref_t<decltype(obj)>>::Load(partial);
         pos += partial_size;
         return *this;
     }
@@ -86,31 +86,31 @@ struct serex::IArchive final : Archive {
 
 struct serex::Dispatcher {
     template <typename T>
-    static auto dispatch_save(T &obj) -> std::string {
+    static auto DispatchSave(T &obj) -> std::string {
         if constexpr (has_func_serialize<T>) {
             OArchive ar;
-            obj.serialize(ar);
+            obj.Serialize(ar);
             return ar.serialized_data;
         }
         else {
             OArchive ar;
-            obj.save(ar);
+            obj.Save(ar);
             return ar.serialized_data;
         }
     }
 
     template <typename T>
-    static auto dispatch_load(const std::string &s) -> T {
+    static auto DispatchLoad(const std::string &s) -> T {
         if constexpr (has_func_serialize<T>) {
             IArchive ar{s};
             T obj;
-            obj.serialize(ar);
+            obj.Serialize(ar);
             return obj;
         }
         else {
             IArchive ar{s};
             T obj;
-            obj.load(ar);
+            obj.Load(ar);
             return obj;
         }
     }
@@ -119,18 +119,18 @@ struct serex::Dispatcher {
 
 template <typename T>
 struct serex::Serializer {
-    static auto save(T &obj) -> std::string {
-        return Dispatcher::dispatch_save(obj);
+    static auto Save(T &obj) -> std::string {
+        return Dispatcher::DispatchSave(obj);
     }
 
-    static auto load(const std::string &s) -> T {
-        return Dispatcher::dispatch_load<T>(s);
+    static auto Load(const std::string &s) -> T {
+        return Dispatcher::DispatchLoad<T>(s);
     }
 };
 
 
 template <typename... Args>
-auto serex::push_into_archive(Archive &ar, Args &... args) -> void {
+auto serex::PushToArchive(Archive &ar, Args &... args) -> void {
     if (auto o_archive = dynamic_cast<OArchive*>(&ar)) {
         (o_archive->operator&(args), ...);
         return;

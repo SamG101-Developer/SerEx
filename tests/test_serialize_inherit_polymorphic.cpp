@@ -6,12 +6,12 @@ import std;
 struct K : serex::SerializablePolymorphicBase {
     int m = 0;
 
-    auto serex_type() -> std::string override {
+    auto SerexType() -> std::string override {
         return "K";
     }
 
-    auto serialize(serex::Archive &ar) -> void override {
-        serex::push_into_archive(ar, m);
+    auto Serialize(serex::Archive &ar) -> void override {
+        serex::PushToArchive(ar, m);
     }
 };
 
@@ -19,13 +19,13 @@ struct K : serex::SerializablePolymorphicBase {
 struct L : K {
     std::string n;
 
-    auto serex_type() -> std::string override {
+    auto SerexType() -> std::string override {
         return "L";
     }
 
-    auto serialize(serex::Archive &ar) -> void override {
-        K::serialize(ar);
-        serex::push_into_archive(ar, n);
+    auto Serialize(serex::Archive &ar) -> void override {
+        K::Serialize(ar);
+        serex::PushToArchive(ar, n);
     }
 };
 
@@ -40,8 +40,8 @@ TEST(SerializeInheritPolymorphicTest, PolymorphicSerialization) {
     original->m = 100;
     original->n = "Polymorphic Inheritance";
 
-    const auto serialized = serex::save(original);
-    auto deserialized = serex::load<K*>(serialized);
+    const auto serialized = serex::Save(original);
+    auto deserialized = serex::Load<K*>(serialized);
 
     // Cast to an owning pointer of type L
     const auto deserialized_l = serex::poly_owning_cast<L>(std::move(deserialized));

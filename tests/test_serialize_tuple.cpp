@@ -8,8 +8,8 @@ struct E {
     std::tuple<std::tuple<int, int>, std::tuple<std::string, std::string>> nested_data = {};
     std::tuple<std::vector<int>, std::vector<std::string>> vector_data = {};
 
-    auto serialize(serex::Archive &ar) -> void {
-        serex::push_into_archive(ar, data, nested_data, vector_data);
+    auto Serialize(serex::Archive &ar) -> void {
+        serex::PushToArchive(ar, data, nested_data, vector_data);
     }
 };
 
@@ -20,8 +20,8 @@ TEST(SerexTuple, SerializeDeserialize) {
     original.nested_data = std::make_tuple(std::make_tuple(1, 2), std::make_tuple("foo", "bar"));
     original.vector_data = std::make_tuple(std::vector<int>{10, 20, 30}, std::vector<std::string>{"alpha", "beta", "gamma"});
 
-    const auto serialized = serex::save(original);
-    const auto deserialized = serex::load<E>(serialized);
+    const auto serialized = serex::Save(original);
+    const auto deserialized = serex::Load<E>(serialized);
 
     EXPECT_EQ(original.data, deserialized.data);
     EXPECT_EQ(original.nested_data, deserialized.nested_data);

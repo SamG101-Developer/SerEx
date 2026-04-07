@@ -15,8 +15,8 @@ struct B {
     std::float32_t j = 0.0f;
     std::float64_t k = 0.0;
 
-    auto serialize(serex::Archive &ar) -> void {
-        serex::push_into_archive(ar, a, b, c, d, e, f, g, h, j, k);
+    auto Serialize(serex::Archive &ar) -> void {
+        serex::PushToArchive(ar, a, b, c, d, e, f, g, h, j, k);
     }
 };
 
@@ -34,8 +34,8 @@ TEST(SerexInt, SerializeDeserialize) {
     original.j = 2.718f;
     original.k = 1.618;
 
-    const auto serialized = serex::save(original);
-    const auto deserialized = serex::load<B>(serialized);
+    const auto serialized = serex::Save(original);
+    const auto deserialized = serex::Load<B>(serialized);
 
     EXPECT_EQ(original.a, deserialized.a);
     EXPECT_EQ(original.b, deserialized.b);

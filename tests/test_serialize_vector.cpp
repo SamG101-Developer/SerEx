@@ -7,8 +7,8 @@ struct D {
     std::vector<int> values = {};
     std::vector<std::string> strings = {};
 
-    auto serialize(serex::Archive &ar) -> void {
-        serex::push_into_archive(ar, values, strings);
+    auto Serialize(serex::Archive &ar) -> void {
+        serex::PushToArchive(ar, values, strings);
     }
 };
 
@@ -18,8 +18,8 @@ TEST(SerexVector, SerializeDeserialize) {
     original.values = {1, 2, 3, 4, 5};
     original.strings = {"one", "two", "three", "four", "five"};
 
-    const auto serialized = serex::save(original);
-    const auto deserialized = serex::load<D>(serialized);
+    const auto serialized = serex::Save(original);
+    const auto deserialized = serex::Load<D>(serialized);
 
     EXPECT_EQ(original.values, deserialized.values);
     EXPECT_EQ(original.strings, deserialized.strings);

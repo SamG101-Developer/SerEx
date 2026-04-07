@@ -6,18 +6,18 @@ import serex.archive;
 template <typename T, typename A>
     requires std::is_trivially_copyable_v<T>
     struct serex::Serializer<std::vector<T, A>> {
-    static auto save(std::vector<T, A> const &obj) -> std::string {
+    static auto Save(std::vector<T, A> const &obj) -> std::string {
         auto stream = std::string();
         auto vec_size = obj.size();
         stream.append(reinterpret_cast<const char*>(&vec_size), sizeof(vec_size));
         for (const auto &item : obj) {
-            auto partial = Serializer<T>::save(item);
+            auto partial = Serializer<T>::Save(item);
             stream.append(partial);
         }
         return stream;
     }
 
-    static auto load(const std::string &s) -> std::vector<T, A> {
+    static auto Load(const std::string &s) -> std::vector<T, A> {
         auto vec = std::vector<T, A>{};
         auto elem_size = sizeof(T);
         auto offset = sizeof(std::size_t);
@@ -25,7 +25,7 @@ template <typename T, typename A>
         std::memcpy(&vec_size, s.data(), sizeof(vec_size));
         for (auto i = 0uz; i < vec_size; ++i) {
             auto item_data = s.substr(offset, elem_size);
-            auto item = Serializer<T>::load(item_data);
+            auto item = Serializer<T>::Load(item_data);
             vec.push_back(std::move(item));
             offset += elem_size;
         }
@@ -36,10 +36,10 @@ template <typename T, typename A>
 
 template <typename T, typename A>
 struct serex::Serializer<std::vector<T, A>> {
-    static auto save(std::vector<T, A> const &obj) -> std::string {
+    static auto Save(std::vector<T, A> const &obj) -> std::string {
         auto stream = std::string();
         for (const auto &item : obj) {
-            auto partial = Serializer<T>::save(item);
+            auto partial = Serializer<T>::Save(item);
             auto partial_size = partial.size();
             stream.append(reinterpret_cast<const char*>(&partial_size), sizeof(std::size_t));
             stream.append(partial);
@@ -47,7 +47,7 @@ struct serex::Serializer<std::vector<T, A>> {
         return stream;
     }
 
-    static auto load(const std::string &s) -> std::vector<T, A> {
+    static auto Load(const std::string &s) -> std::vector<T, A> {
         auto vec = std::vector<T, A>{};
         auto i = 0uz;
         while (i < s.size()) {
@@ -57,7 +57,7 @@ struct serex::Serializer<std::vector<T, A>> {
 
             auto item_data = s.substr(i, item_size);
             i += item_size;
-            vec.push_back(Serializer<T>::load(item_data));
+            vec.push_back(Serializer<T>::Load(item_data));
         }
         return vec;
     }

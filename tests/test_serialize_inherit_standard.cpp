@@ -4,21 +4,21 @@ import std;
 
 
 struct I {
-    int a;
+    int a = 0;
     std::string b;
 
-    auto serialize(serex::Archive &ar) -> void {
-        serex::push_into_archive(ar, a, b);
+    auto Serialize(serex::Archive &ar) -> void {
+        serex::PushToArchive(ar, a, b);
     }
 };
 
 
 struct J : I {
-    double c;
+    double c = 0.0;
 
-    auto serialize(serex::Archive &ar) -> void {
-        I::serialize(ar);
-        serex::push_into_archive(ar, c);
+    auto Serialize(serex::Archive &ar) -> void {
+        I::Serialize(ar);
+        serex::PushToArchive(ar, c);
     }
 };
 
@@ -30,8 +30,8 @@ TEST(SerializeInheritStandardTest, InheritanceSerialization) {
     original.b = "Hello Inheritance";
     original.c = 3.14159;
 
-    const auto serialized = serex::save(original);
-    const auto deserialized = serex::load<J>(serialized);
+    const auto serialized = serex::Save(original);
+    const auto deserialized = serex::Load<J>(serialized);
 
     // Verify that the deserialized object matches the original
     EXPECT_EQ(deserialized.a, original.a);

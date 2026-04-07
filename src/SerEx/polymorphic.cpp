@@ -24,9 +24,9 @@ export namespace serex {
 struct serex::SerializablePolymorphicBase {
     virtual ~SerializablePolymorphicBase() = default;
 
-    virtual auto serex_type() -> std::string = 0;
+    virtual auto SerexType() -> std::string = 0;
 
-    virtual auto serialize(Archive &ar) -> void = 0;
+    virtual auto Serialize(Archive &ar) -> void = 0;
 
     inline static std::unordered_map<std::string, std::function<std::unique_ptr<SerializablePolymorphicBase>()>> registry;
 };
@@ -35,11 +35,11 @@ struct serex::SerializablePolymorphicBase {
 
 template <typename T>
 struct serex::Serializer<std::unique_ptr<T>> {
-    static auto save(std::unique_ptr<T> const &obj) -> std::string {
-        return obj->serex_type() + "\n" + Serializer<T>::save(*obj);
+    static auto Save(std::unique_ptr<T> const &obj) -> std::string {
+        return obj->SerexType() + "\n" + Serializer<T>::Save(*obj);
     }
 
-    static auto load(const std::string &s) -> std::unique_ptr<T> {
+    static auto Load(const std::string &s) -> std::unique_ptr<T> {
         // Get the "std::unique_ptr" of the correct derived type.
         const auto end_type = s.find('\n');
         const auto type = s.substr(0, end_type);
@@ -49,7 +49,7 @@ struct serex::Serializer<std::unique_ptr<T>> {
 
         // Load the object data into the derived type object.
         auto archive = IArchive(s.substr(end_type + 1));
-        ptr->serialize(archive);
+        ptr->Serialize(archive);
         return std::unique_ptr<T>(dynamic_cast<T*>(ptr.release()));
     }
 };
