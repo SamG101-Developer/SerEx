@@ -3,7 +3,6 @@ export module serex.serialize;
 export import serex.archive;
 export import serex.boolean;
 export import serex.numbers;
-export import serex.pointer;
 export import serex.polymorphic;
 export import serex.string;
 export import serex.tuple;

@@ -4,7 +4,7 @@ import std;
 
 
 struct K : serex::SerializablePolymorphicBase {
-    int m;
+    int m = 0;
 
     auto serex_type() -> std::string override {
         return "K";
@@ -40,8 +40,8 @@ TEST(SerializeInheritPolymorphicTest, PolymorphicSerialization) {
     original->m = 100;
     original->n = "Polymorphic Inheritance";
 
-    const auto serialized = serex::save_poly(std::move(original));
-    auto deserialized = serex::load_poly<K>(serialized);
+    const auto serialized = serex::save(original);
+    auto deserialized = serex::load<K*>(serialized);
 
     // Cast to an owning pointer of type L
     const auto deserialized_l = serex::poly_owning_cast<L>(std::move(deserialized));

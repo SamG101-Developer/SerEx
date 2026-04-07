@@ -18,29 +18,24 @@ namespace serex {
         { obj.serialize(ar) } -> std::same_as<void>;
     };
 
-    export template <typename T>
+    export template <typename T> requires (not std::is_pointer_v<T>)
     auto save(T &obj) -> std::string {
-        return Serializer<T>::save(obj);
+        return Serializer<std::remove_cvref_t<T>>::save(obj);
     }
 
-    export template <typename T>
+    export template <typename T> requires (not std::is_pointer_v<T>)
     auto load(const std::string &s) -> T {
-        return Serializer<T>::load(s);
+        return Serializer<std::remove_cvref_t<T>>::load(s);
+    }
+
+    export template <typename T> requires std::is_pointer_v<T>
+    auto load(const std::string &s) -> std::unique_ptr<std::remove_pointer_t<T>> {
+        return Serializer<std::unique_ptr<std::remove_pointer_t<T>>>::load(s);
     }
 
     export template <typename T>
     auto load(std::string &&s) -> auto {
         return serex::load<T>(s);
-    }
-
-    export template <typename T>
-    auto save_poly(std::unique_ptr<T> const &obj) -> std::string {
-        return Serializer<std::unique_ptr<T>>::save(obj);
-    }
-
-    export template <typename T>
-    auto load_poly(const std::string &s) -> std::unique_ptr<T> {
-        return Serializer<std::unique_ptr<T>>::load(s);
     }
 
     export template <typename... Args>
@@ -60,7 +55,7 @@ struct serex::OArchive final : Archive {
     OArchive() = default;
 
     auto operator&(auto &obj) -> OArchive& {
-        auto partial = Serializer<std::remove_cvref_t<decltype(obj)>>::save(obj);
+        auto partial = Serializer<std::decay_t<decltype(obj)>>::save(obj);
         auto partial_size = partial.size();
         serialized_data.append(reinterpret_cast<const char*>(&partial_size), sizeof(std::size_t));
         serialized_data.append(partial);
@@ -92,10 +87,7 @@ struct serex::IArchive final : Archive {
 struct serex::Dispatcher {
     template <typename T>
     static auto dispatch_save(T &obj) -> std::string {
-        if constexpr (std::is_pointer_v<T>) {
-            return Serializer<T>::save(obj);
-        }
-        else if constexpr (has_func_serialize<T>) {
+        if constexpr (has_func_serialize<T>) {
             OArchive ar;
             obj.serialize(ar);
             return ar.serialized_data;
@@ -109,10 +101,7 @@ struct serex::Dispatcher {
 
     template <typename T>
     static auto dispatch_load(const std::string &s) -> T {
-        if constexpr (std::is_pointer_v<T>) {
-            return Serializer<T>::load(s);
-        }
-        else if constexpr (has_func_serialize<T>) {
+        if constexpr (has_func_serialize<T>) {
             IArchive ar{s};
             T obj;
             obj.serialize(ar);
