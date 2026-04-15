@@ -32,6 +32,22 @@ struct H {
 };
 
 
+struct I {
+    int a;
+    int b;
+
+    auto Save(serex::OArchive &ar) const -> void {
+        serex::Push(ar, a, b);
+    }
+
+    auto Load(serex::IArchive &ar) -> void {
+        serex::Push(ar, a, b);
+        a += 1;
+        b += 1;
+    }
+};
+
+
 TEST(SerializeObjectsTest, NestedSerialization) {
     // Create an object of type H
     auto original = H{};
@@ -57,4 +73,11 @@ TEST(SerializeObjectsTest, NestedSerialization) {
     EXPECT_EQ(deserialized_const.f.y, original_const.f.y);
     EXPECT_EQ(deserialized_const.g.f.x, original_const.g.f.x);
     EXPECT_EQ(deserialized_const.g.f.y, original_const.g.f.y);
+
+    // Individual save and load functions.
+    auto i = I{1, 2};
+    const auto serialized_i = serex::Save(i);
+    const auto deserialized_i = serex::Load<I>(serialized_i);
+    EXPECT_EQ(deserialized_i.a, i.a + 1);
+    EXPECT_EQ(deserialized_i.b, i.b + 1);
 }

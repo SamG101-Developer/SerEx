@@ -19,13 +19,13 @@ namespace serex {
     };
 
     template <typename T>
-    concept has_func_save = requires(T const &obj, Archive &ar)
+    concept has_func_save = requires(T const &obj, OArchive &ar)
     {
         { obj.Save(ar) } -> std::same_as<void>;
     };
 
     template <typename T>
-    concept has_func_load = requires(T &obj, Archive &ar)
+    concept has_func_load = requires(T &obj, IArchive &ar)
     {
         { obj.Load(ar) } -> std::same_as<void>;
     };
@@ -47,13 +47,13 @@ namespace serex {
 
     export template <typename T>
     auto Load(std::string &&s) -> auto {
-        return serex::Load<T>(std::move(s));
+        return Serializer<std::remove_cvref_t<T>>::Load(s);
     }
 
     export template <typename... Args>
     auto Push(Archive &ar, Args &... args) -> void;
     export template <typename... Args>
-    auto Push(OArchive &ar, Args const &... args) -> void;
+    auto Push(OArchive &ar, Args &... args) -> void;
     export template <typename... Args>
     auto Push(IArchive &ar, Args &... args) -> void;
 }
@@ -84,13 +84,15 @@ struct serex::IArchive final : Archive {
     explicit IArchive(std::string data) :
         SerializedData(std::move(data)) {}
 
-    auto operator&(auto &obj) -> IArchive& {
+    template <typename T>
+    requires (not std::is_const_v<std::remove_reference_t<T>>)
+    auto operator&(T &obj) -> IArchive& {
         auto partial_size = 0uz;
         std::memcpy(&partial_size, SerializedData.data() + Pos, sizeof(std::size_t));
         Pos += sizeof(std::size_t);
 
         auto partial = SerializedData.substr(Pos, partial_size);
-        obj = Serializer<std::remove_cvref_t<decltype(obj)>>::Load(partial);
+        obj = Serializer<std::remove_cvref_t<T>>::Load(partial);
         Pos += partial_size;
         return *this;
     }
@@ -159,7 +161,7 @@ auto serex::Push(Archive &ar, Args &... args) -> void {
 }
 
 template <typename... Args>
-auto serex::Push(OArchive &ar, Args const &... args) -> void {
+auto serex::Push(OArchive &ar, Args &... args) -> void {
     (ar.operator&(args), ...);
 }
 

@@ -161,6 +161,20 @@ auto test() {
 ### Different load and save methods
 
 ```cpp
+struct TestStruct5 {
+    int a;
+
+    auto Save() const -> std::string {
+        return std::to_string(a);
+    }
+
+    static auto Load(std::string const &s) -> TestStruct5 {
+        return TestStruct5{std::stoi(s)};
+    }
+};
+```
+
+```cpp
 template <>
 struct serex::Serializer<bool> {
     static auto Save(bool const &obj) -> std::string {
