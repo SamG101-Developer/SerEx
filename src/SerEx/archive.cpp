@@ -13,8 +13,21 @@ namespace serex {
     struct Serializer;
 
     template <typename T>
-    concept has_func_serialize = requires(T &obj, OArchive &ar) {
+    concept has_func_serialize = requires(T &obj, Archive &ar)
+    {
         { obj.Serialize(ar) } -> std::same_as<void>;
+    };
+
+    template <typename T>
+    concept has_func_save = requires(T const &obj, Archive &ar)
+    {
+        { obj.Save(ar) } -> std::same_as<void>;
+    };
+
+    template <typename T>
+    concept has_func_load = requires(T &obj, Archive &ar)
+    {
+        { obj.Load(ar) } -> std::same_as<void>;
     };
 
     export template <typename T> requires (not std::is_pointer_v<T>)
@@ -34,11 +47,15 @@ namespace serex {
 
     export template <typename T>
     auto Load(std::string &&s) -> auto {
-        return serex::Load<T>(s);
+        return serex::Load<T>(std::move(s));
     }
 
     export template <typename... Args>
     auto Push(Archive &ar, Args &... args) -> void;
+    export template <typename... Args>
+    auto Push(OArchive &ar, Args const &... args) -> void;
+    export template <typename... Args>
+    auto Push(IArchive &ar, Args &... args) -> void;
 }
 
 struct serex::Archive {
@@ -51,7 +68,7 @@ struct serex::OArchive final : Archive {
 
     OArchive() = default;
 
-    auto operator&(auto &obj) -> OArchive& {
+    auto operator&(auto const &obj) -> OArchive& {
         auto partial = Serializer<std::decay_t<decltype(obj)>>::Save(obj);
         auto partial_size = partial.size();
         SerializedData.append(reinterpret_cast<const char*>(&partial_size), sizeof(std::size_t));
@@ -82,31 +99,37 @@ struct serex::IArchive final : Archive {
 struct serex::Dispatcher {
     template <typename T>
     static auto DispatchSave(T const &obj) -> std::string {
-        if constexpr (has_func_serialize<T>) {
+        if constexpr (has_func_save<T>) {
+            OArchive ar;
+            obj.Save(ar);
+            return ar.SerializedData;
+        }
+        else if constexpr (has_func_serialize<T>) {
             OArchive ar;
             const_cast<T&>(obj).Serialize(ar);
             return ar.SerializedData;
         }
         else {
-            OArchive ar;
-            obj.Save(ar);
-            return ar.SerializedData;
+            static_assert(false, "Type must have either Save or Serialize function for serialization");
         }
     }
 
     template <typename T>
     static auto DispatchLoad(const std::string &s) -> T {
-        if constexpr (has_func_serialize<T>) {
-            IArchive ar{s};
+        if constexpr (has_func_load<T>) {
+            IArchive ar(s);
+            T obj;
+            obj.Load(ar);
+            return obj;
+        }
+        else if constexpr (has_func_serialize<T>) {
+            IArchive ar(s);
             T obj;
             obj.Serialize(ar);
             return obj;
         }
         else {
-            IArchive ar{s};
-            T obj;
-            obj.Load(ar);
-            return obj;
+            static_assert(false, "Type must have either Load or Serialize function for deserialization");
         }
     }
 };
@@ -133,4 +156,14 @@ auto serex::Push(Archive &ar, Args &... args) -> void {
         return;
     }
     std::unreachable();
+}
+
+template <typename... Args>
+auto serex::Push(OArchive &ar, Args const &... args) -> void {
+    (ar.operator&(args), ...);
+}
+
+template <typename... Args>
+auto serex::Push(IArchive &ar, Args &... args) -> void {
+    (ar.operator&(args), ...);
 }

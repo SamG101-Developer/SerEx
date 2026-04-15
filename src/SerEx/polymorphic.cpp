@@ -8,13 +8,16 @@ export namespace serex {
     struct SerializablePolymorphicBase;
 
     template <typename To, typename From>
-        requires std::derived_from<From, SerializablePolymorphicBase> and std::derived_from<To, From>
+    requires std::derived_from<From, SerializablePolymorphicBase> and std::derived_from<To, From>
     auto poly_owning_cast(std::unique_ptr<From> &&from) -> std::unique_ptr<To> {
-        return std::unique_ptr<To>(dynamic_cast<To*>(from.release()));
+        auto raw = dynamic_cast<To*>(from.get());
+        if (!raw) return nullptr;
+        from.release();
+        return std::unique_ptr<To>(raw);
     }
 
     template <typename To, typename From>
-        requires std::derived_from<From, SerializablePolymorphicBase> and std::derived_from<To, From>
+    requires std::derived_from<From, SerializablePolymorphicBase> and std::derived_from<To, From>
     auto poly_non_owning_cast(const std::unique_ptr<From> &from) -> To* {
         return dynamic_cast<To*>(from.get());
     }
@@ -30,7 +33,9 @@ struct serex::SerializablePolymorphicBase {
 
 
 template <typename T>
+requires std::derived_from<T, serex::SerializablePolymorphicBase>
 struct serex::Serializer<std::unique_ptr<T>> {
+    // Todo: Handle nullptr (special encoding)?
     static auto Save(std::unique_ptr<T> const &obj) -> std::string {
         return obj->SerexType() + "\n" + Serializer<T>::Save(*obj);
     }
@@ -52,6 +57,7 @@ struct serex::Serializer<std::unique_ptr<T>> {
 
 export namespace serex {
     template <typename T>
+    requires std::derived_from<T, SerializablePolymorphicBase>
     auto register_polymorphic_type(const std::string &type_name) -> void {
         SerializablePolymorphicBase::registry[type_name] = [] { return std::make_unique<T>(); };
     }

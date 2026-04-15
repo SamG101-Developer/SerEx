@@ -48,4 +48,13 @@ TEST(SerializeObjectsTest, NestedSerialization) {
     EXPECT_EQ(deserialized.f.y, original.f.y);
     EXPECT_EQ(deserialized.g.f.x, original.g.f.x);
     EXPECT_EQ(deserialized.g.f.y, original.g.f.y);
+
+    // Const version.
+    const auto original_const = original;
+    const auto serialized_const = serex::Save(original_const);
+    const auto deserialized_const = serex::Load<H>(serialized_const);
+    EXPECT_EQ(deserialized_const.f.x, original_const.f.x);
+    EXPECT_EQ(deserialized_const.f.y, original_const.f.y);
+    EXPECT_EQ(deserialized_const.g.f.x, original_const.g.f.x);
+    EXPECT_EQ(deserialized_const.g.f.y, original_const.g.f.y);
 }
