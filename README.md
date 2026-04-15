@@ -157,3 +157,18 @@ auto test() {
     auto ff = serex::poly_owning_cast<Derived>(std::move(dd));  // std::unique_ptr<Derived> (moved from dd)
 }
 ```
+
+### Different load and save methods
+
+```cpp
+template <>
+struct serex::Serializer<bool> {
+    static auto Save(bool const &obj) -> std::string {
+        return obj ? "1" : "0";
+    }
+
+    static auto Load(std::string const &s) -> bool {
+        return s == "1";
+    }
+};
+```

@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-import serex.serialize;
+import serex;
 import std;
 
 
@@ -8,7 +8,7 @@ struct F {
     std::string y;
 
     auto Serialize(serex::Archive &ar) -> void {
-        serex::PushToArchive(ar, x, y);
+        serex::Push(ar, x, y);
     }
 };
 
@@ -17,7 +17,7 @@ struct G {
     F f;
 
     auto Serialize(serex::Archive &ar) -> void {
-        serex::PushToArchive(ar, f);
+        serex::Push(ar, f);
     }
 };
 
@@ -27,7 +27,7 @@ struct H {
     G g;
 
     auto Serialize(serex::Archive &ar) -> void {
-        serex::PushToArchive(ar, f, g);
+        serex::Push(ar, f, g);
     }
 };
 

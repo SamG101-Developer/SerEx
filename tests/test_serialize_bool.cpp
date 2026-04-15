@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-import serex.serialize;
+import serex;
 
 
 struct A {
@@ -8,7 +8,7 @@ struct A {
     bool c = false;
 
     auto Serialize(serex::Archive &ar) -> void {
-        serex::PushToArchive(ar, a, b, c);
+        serex::Push(ar, a, b, c);
     }
 };
 

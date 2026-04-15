@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-import serex.serialize;
+import serex;
 import std;
 
 
@@ -8,7 +8,7 @@ struct D {
     std::vector<std::string> strings = {};
 
     auto Serialize(serex::Archive &ar) -> void {
-        serex::PushToArchive(ar, values, strings);
+        serex::Push(ar, values, strings);
     }
 };
 

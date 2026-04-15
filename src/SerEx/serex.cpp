@@ -1,4 +1,4 @@
-export module serex.serialize;
+export module serex;
 
 export import serex.archive;
 export import serex.boolean;

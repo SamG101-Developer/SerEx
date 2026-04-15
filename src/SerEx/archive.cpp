@@ -1,5 +1,4 @@
 export module serex.archive;
-import serex.encoding;
 import std;
 
 
@@ -19,17 +18,17 @@ namespace serex {
     };
 
     export template <typename T> requires (not std::is_pointer_v<T>)
-    auto Save(T &obj) -> std::string {
+    auto Save(T const &obj) -> std::string {
         return Serializer<std::remove_cvref_t<T>>::Save(obj);
     }
 
     export template <typename T> requires (not std::is_pointer_v<T>)
-    auto Load(const std::string &s) -> T {
+    auto Load(std::string const &s) -> T {
         return Serializer<std::remove_cvref_t<T>>::Load(s);
     }
 
     export template <typename T> requires std::is_pointer_v<T>
-    auto Load(const std::string &s) -> std::unique_ptr<std::remove_pointer_t<T>> {
+    auto Load(std::string const &s) -> std::unique_ptr<std::remove_pointer_t<T>> {
         return Serializer<std::unique_ptr<std::remove_pointer_t<T>>>::Load(s);
     }
 
@@ -39,63 +38,59 @@ namespace serex {
     }
 
     export template <typename... Args>
-    auto PushToArchive(Archive &ar, Args &... args) -> void;
+    auto Push(Archive &ar, Args &... args) -> void;
 }
-
 
 struct serex::Archive {
     virtual ~Archive() = default;
     Archive() = default;
 };
 
-
 struct serex::OArchive final : Archive {
-    std::string serialized_data;
+    std::string SerializedData;
 
     OArchive() = default;
 
     auto operator&(auto &obj) -> OArchive& {
         auto partial = Serializer<std::decay_t<decltype(obj)>>::Save(obj);
         auto partial_size = partial.size();
-        serialized_data.append(reinterpret_cast<const char*>(&partial_size), sizeof(std::size_t));
-        serialized_data.append(partial);
+        SerializedData.append(reinterpret_cast<const char*>(&partial_size), sizeof(std::size_t));
+        SerializedData.append(partial);
         return *this;
     }
 };
 
-
 struct serex::IArchive final : Archive {
-    std::string serialized_data;
-    std::size_t pos = 0;
+    std::string SerializedData;
+    std::size_t Pos = 0;
 
     explicit IArchive(std::string data) :
-        serialized_data(std::move(data)) {}
+        SerializedData(std::move(data)) {}
 
     auto operator&(auto &obj) -> IArchive& {
         auto partial_size = 0uz;
-        std::memcpy(&partial_size, serialized_data.data() + pos, sizeof(std::size_t));
-        pos += sizeof(std::size_t);
+        std::memcpy(&partial_size, SerializedData.data() + Pos, sizeof(std::size_t));
+        Pos += sizeof(std::size_t);
 
-        auto partial = serialized_data.substr(pos, partial_size);
+        auto partial = SerializedData.substr(Pos, partial_size);
         obj = Serializer<std::remove_cvref_t<decltype(obj)>>::Load(partial);
-        pos += partial_size;
+        Pos += partial_size;
         return *this;
     }
 };
 
-
 struct serex::Dispatcher {
     template <typename T>
-    static auto DispatchSave(T &obj) -> std::string {
+    static auto DispatchSave(T const &obj) -> std::string {
         if constexpr (has_func_serialize<T>) {
             OArchive ar;
-            obj.Serialize(ar);
-            return ar.serialized_data;
+            const_cast<T&>(obj).Serialize(ar);
+            return ar.SerializedData;
         }
         else {
             OArchive ar;
             obj.Save(ar);
-            return ar.serialized_data;
+            return ar.SerializedData;
         }
     }
 
@@ -116,10 +111,9 @@ struct serex::Dispatcher {
     }
 };
 
-
 template <typename T>
 struct serex::Serializer {
-    static auto Save(T &obj) -> std::string {
+    static auto Save(T const &obj) -> std::string {
         return Dispatcher::DispatchSave(obj);
     }
 
@@ -128,9 +122,8 @@ struct serex::Serializer {
     }
 };
 
-
 template <typename... Args>
-auto serex::PushToArchive(Archive &ar, Args &... args) -> void {
+auto serex::Push(Archive &ar, Args &... args) -> void {
     if (auto o_archive = dynamic_cast<OArchive*>(&ar)) {
         (o_archive->operator&(args), ...);
         return;

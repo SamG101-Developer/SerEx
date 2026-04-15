@@ -1,16 +1,15 @@
 export module serex.boolean;
-import std;
-
 import serex.archive;
+import std;
 
 
 template <>
 struct serex::Serializer<bool> {
-    static auto Save(const bool &obj) -> std::string {
+    static auto Save(bool const &obj) -> std::string {
         return obj ? "1" : "0";
     }
 
-    static auto Load(const std::string &s) -> bool {
+    static auto Load(std::string const &s) -> bool {
         return s == "1";
     }
 };

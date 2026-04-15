@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-import serex.serialize;
+import serex;
 import std;
 
 
@@ -16,7 +16,7 @@ struct B {
     std::float64_t k = 0.0;
 
     auto Serialize(serex::Archive &ar) -> void {
-        serex::PushToArchive(ar, a, b, c, d, e, f, g, h, j, k);
+        serex::Push(ar, a, b, c, d, e, f, g, h, j, k);
     }
 };
 

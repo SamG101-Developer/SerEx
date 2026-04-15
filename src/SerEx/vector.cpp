@@ -1,11 +1,11 @@
 export module serex.vector;
-import std;
 import serex.archive;
+import std;
 
 
 template <typename T, typename A>
-    requires std::is_trivially_copyable_v<T>
-    struct serex::Serializer<std::vector<T, A>> {
+requires std::is_trivially_copyable_v<T>
+struct serex::Serializer<std::vector<T, A>> {
     static auto Save(std::vector<T, A> const &obj) -> std::string {
         auto stream = std::string();
         auto vec_size = obj.size();
@@ -33,7 +33,6 @@ template <typename T, typename A>
     }
 };
 
-
 template <typename T, typename A>
 struct serex::Serializer<std::vector<T, A>> {
     static auto Save(std::vector<T, A> const &obj) -> std::string {
@@ -47,7 +46,7 @@ struct serex::Serializer<std::vector<T, A>> {
         return stream;
     }
 
-    static auto Load(const std::string &s) -> std::vector<T, A> {
+    static auto Load(std::string const &s) -> std::vector<T, A> {
         auto vec = std::vector<T, A>{};
         auto i = 0uz;
         while (i < s.size()) {

@@ -1,12 +1,12 @@
 export module serex.tuple;
-import std;
 import serex.archive;
+import std;
 
 
 template <typename... Ts>
 struct serex::Serializer<std::tuple<Ts...>> {
     template <std::size_t N> requires (N < sizeof...(Ts))
-    static auto SaveHelper(std::tuple<Ts...> const& obj) -> std::string {
+    static auto SaveHelper(std::tuple<Ts...> const &obj) -> std::string {
         using current_t = std::tuple_element_t<N, std::tuple<Ts...>>;
         auto self = Serializer<current_t>::Save(std::get<N>(obj));
         auto self_size = self.size();
@@ -15,16 +15,16 @@ struct serex::Serializer<std::tuple<Ts...>> {
     }
 
     template <std::size_t N> requires (N == sizeof...(Ts))
-    static auto SaveHelper(std::tuple<Ts...> const& obj) -> std::string {
+    static auto SaveHelper(std::tuple<Ts...> const &) -> std::string {
         return {};
     }
 
-    static auto Save(std::tuple<Ts...> const& obj) -> std::string {
+    static auto Save(std::tuple<Ts...> const &obj) -> std::string {
         return SaveHelper<0>(obj);
     }
 
     template <std::size_t N> requires (N < sizeof...(Ts))
-    static auto LoadHelper(const std::string& s) {
+    static auto LoadHelper(const std::string &s) {
         using current_t = std::tuple_element_t<N, std::tuple<Ts...>>;
         std::size_t item_size;
         std::memcpy(&item_size, s.data(), sizeof(std::size_t));
@@ -35,11 +35,11 @@ struct serex::Serializer<std::tuple<Ts...>> {
     }
 
     template <std::size_t N> requires (N == sizeof...(Ts))
-    static auto LoadHelper(const std::string& s) -> std::tuple<> {
+    static auto LoadHelper(const std::string &s) -> std::tuple<> {
         return {};
     }
 
-    static auto Load(const std::string& s) -> std::tuple<Ts...> {
+    static auto Load(std::string const &s) -> std::tuple<Ts...> {
         return LoadHelper<0>(s);
     }
 };

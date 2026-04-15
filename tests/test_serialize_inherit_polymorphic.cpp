@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-import serex.serialize;
+import serex;
 import std;
 
 
@@ -11,7 +11,7 @@ struct K : serex::SerializablePolymorphicBase {
     }
 
     auto Serialize(serex::Archive &ar) -> void override {
-        serex::PushToArchive(ar, m);
+        serex::Push(ar, m);
     }
 };
 
@@ -25,7 +25,7 @@ struct L : K {
 
     auto Serialize(serex::Archive &ar) -> void override {
         K::Serialize(ar);
-        serex::PushToArchive(ar, n);
+        serex::Push(ar, n);
     }
 };
 
