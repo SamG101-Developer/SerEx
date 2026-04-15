@@ -45,10 +45,10 @@ namespace serex {
         return Serializer<std::unique_ptr<std::remove_pointer_t<T>>>::Load(s);
     }
 
-    export template <typename T>
-    auto Load(std::string &&s) -> auto {
-        return Serializer<std::remove_cvref_t<T>>::Load(s);
-    }
+    // export template <typename T>
+    // auto Load(std::string &&s) -> auto {
+    //     return Serializer<std::remove_cvref_t<T>>::Load(s);
+    // }
 
     export template <typename... Args>
     auto Push(Archive &ar, Args &... args) -> void;
